@@ -5,6 +5,7 @@
 package com.hashim.spotifyclone
 
 import android.app.Application
+import com.hashim.spotifyclone.other.Constants
 import timber.log.Timber
 
 class BaseApplication : Application() {
