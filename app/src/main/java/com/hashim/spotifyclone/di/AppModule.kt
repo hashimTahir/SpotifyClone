@@ -6,6 +6,7 @@ package com.hashim.spotifyclone.di
 
 import android.content.Context
 import com.bumptech.glide.Glide
+import com.bumptech.glide.RequestManager
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.bumptech.glide.request.RequestOptions
 import com.hashim.spotifyclone.R
@@ -23,8 +24,8 @@ object AppModule {
     @Provides
     fun hProvidesGlideInstance(
         @ApplicationContext context: Context
-    ) {
-        Glide.with(context)
+    ): RequestManager {
+        return Glide.with(context)
             .setDefaultRequestOptions(
                 RequestOptions()
                     .placeholder(R.drawable.ic_image)
