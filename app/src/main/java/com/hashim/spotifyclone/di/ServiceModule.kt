@@ -11,6 +11,7 @@ import com.google.android.exoplayer2.audio.AudioAttributes
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.google.android.exoplayer2.util.Util
 import com.hashim.spotifyclone.R
+import com.hashim.spotifyclone.data.remote.MusicDataBase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -56,5 +57,12 @@ object ServiceModule {
                 context.resources.getString(R.string.app_name)
             )
         )
+    }
+
+
+    @Provides
+    @ServiceScoped
+    fun hProvidesMusicDatabase(): MusicDataBase {
+        return MusicDataBase()
     }
 }
