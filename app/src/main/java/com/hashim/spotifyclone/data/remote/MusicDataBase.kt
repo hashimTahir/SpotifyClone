@@ -9,7 +9,7 @@ import com.hashim.spotifyclone.data.entities.Song
 import com.hashim.spotifyclone.other.Constants
 import kotlinx.coroutines.tasks.await
 
-class SongDatabase {
+class MusicDataBase {
     private val hFirestore = FirebaseFirestore.getInstance()
     private val hSongCollection = hFirestore.collection(Constants.H_SONGS)
 
