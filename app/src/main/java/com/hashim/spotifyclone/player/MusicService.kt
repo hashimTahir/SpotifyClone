@@ -5,22 +5,24 @@
 package com.hashim.spotifyclone.player
 
 import android.app.PendingIntent
+import android.content.Intent
 import android.os.Bundle
 import android.support.v4.media.MediaBrowserCompat
+import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
 import androidx.media.MediaBrowserServiceCompat
+import com.google.android.exoplayer2.Player
 import com.google.android.exoplayer2.SimpleExoPlayer
 import com.google.android.exoplayer2.ext.mediasession.MediaSessionConnector
+import com.google.android.exoplayer2.ext.mediasession.TimelineQueueNavigator
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
+import com.hashim.spotifyclone.other.Constants
 import com.hashim.spotifyclone.player.callbacks.MusicPlaybacePreparer
 import com.hashim.spotifyclone.player.callbacks.MusicPlayerEventListener
 import com.hashim.spotifyclone.player.callbacks.MusicPlayerNotificaitonListener
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.cancel
+import kotlinx.coroutines.*
 import javax.inject.Inject
 
 private const val SERVICE_TAG = "Music Service"
@@ -49,15 +51,25 @@ class MusicService : MediaBrowserServiceCompat() {
     private lateinit var hMediaSession: MediaSessionCompat
     private lateinit var hMediaSessionConnector: MediaSessionConnector
     private lateinit var hMusicNotificationManager: MusicNotificationManager
+    private lateinit var hMusicPlayerEventListener: MusicPlayerEventListener
 
     private var hCurrentlyPlayingSong: MediaMetadataCompat? = null
 
     var hIsForeGroundService = false
+    private var hIsPlayerInitilized = false
 
+    companion object {
+        var hCurrentSongDuration = 0L
+            /*Value can only be changed from within the service*/
+            private set
+    }
 
     override fun onCreate() {
         super.onCreate()
 
+        hServiceScoped.launch {
+            hFirebaseMusicSource.hFetchMedia()
+        }
         val hActivityIntent = packageManager?.getLaunchIntentForPackage(packageName)?.let {
             PendingIntent.getActivity(
                 this,
@@ -82,7 +94,7 @@ class MusicService : MediaBrowserServiceCompat() {
                 this
             )
         ) {
-
+            hCurrentSongDuration = hExoPlayer.contentDuration
 
         }
 
@@ -99,9 +111,12 @@ class MusicService : MediaBrowserServiceCompat() {
 
         hMediaSessionConnector.setPlaybackPreparer(hMusicPlaybacePreparer)
 
+        hMediaSessionConnector.setQueueNavigator(MusiceQueueNavigator())
+
         hMediaSessionConnector.setPlayer(hExoPlayer)
 
-        hExoPlayer.addListener(MusicPlayerEventListener(this))
+        hMusicPlayerEventListener = MusicPlayerEventListener(this)
+        hExoPlayer.addListener(hMusicPlayerEventListener)
 
         hMusicNotificationManager.hShowNotification(hExoPlayer)
     }
@@ -126,18 +141,53 @@ class MusicService : MediaBrowserServiceCompat() {
         clientUid: Int,
         rootHints: Bundle?
     ): BrowserRoot? {
-        TODO("Not yet implemented")
+        return BrowserRoot(Constants.H_MEDIA_ROOT_ID, null)
     }
 
     override fun onLoadChildren(
         parentId: String,
         result: Result<MutableList<MediaBrowserCompat.MediaItem>>
     ) {
-        TODO("Not yet implemented")
+        when (parentId) {
+            Constants.H_MEDIA_ROOT_ID -> {
+                val hResultsSent = hFirebaseMusicSource.hWhenReady { isInitilized ->
+                    if (isInitilized) {
+                        result.sendResult(hFirebaseMusicSource.hAsMediaItems())
+                        if (!hIsPlayerInitilized && hFirebaseMusicSource.hSongsList.isNotEmpty()) {
+                            hPreparePlayer(
+                                hFirebaseMusicSource.hSongsList,
+                                hFirebaseMusicSource.hSongsList[0],
+                                false
+                            )
+                            hIsPlayerInitilized = true
+                        } else {
+                            result.sendResult(null)
+                        }
+                    }
+                }
+                if (!hResultsSent) {
+                    result.detach()
+                }
+            }
+        }
+    }
+
+    override fun onTaskRemoved(rootIntent: Intent?) {
+        super.onTaskRemoved(rootIntent)
+        hExoPlayer.stop()
     }
 
     override fun onDestroy() {
         super.onDestroy()
         hServiceScoped.cancel()
+        hExoPlayer.removeListener(hMusicPlayerEventListener)
+        hExoPlayer.release()
+
+    }
+
+    private inner class MusiceQueueNavigator : TimelineQueueNavigator(hMediaSession) {
+        override fun getMediaDescription(player: Player, windowIndex: Int): MediaDescriptionCompat {
+            return hFirebaseMusicSource.hSongsList[windowIndex].description
+        }
     }
 }

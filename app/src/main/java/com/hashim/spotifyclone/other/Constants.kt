@@ -10,6 +10,7 @@ class Constants {
         const val H_SONGS = "songs"
         const val hTag = "hashimTimberTags %s"
         const val H_NOTIFICATION_CHANNEL_ID = "Music"
+        const val H_MEDIA_ROOT_ID = "hRootId"
     }
 
 }

@@ -50,7 +50,7 @@ class FirebaseMusicSource @Inject constructor(
                 .setIconUri(song.description.iconUri)
                 .build()
             MediaBrowserCompat.MediaItem(des, FLAG_PLAYABLE)
-        }
+        }.toMutableList()
 
 
     /*Contains information for exo player where it can play the play list*/
