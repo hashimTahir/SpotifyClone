@@ -4,7 +4,14 @@
 
 package com.hashim.spotifyclone.player
 
+import android.support.v4.media.MediaBrowserCompat
+import android.support.v4.media.MediaBrowserCompat.MediaItem.FLAG_PLAYABLE
+import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.MediaMetadataCompat
+import androidx.core.net.toUri
+import com.google.android.exoplayer2.source.ConcatenatingMediaSource
+import com.google.android.exoplayer2.source.ProgressiveMediaSource
+import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
 import com.hashim.spotifyclone.data.remote.MusicDataBase
 import com.hashim.spotifyclone.player.State.*
 import kotlinx.coroutines.Dispatchers
@@ -32,11 +39,39 @@ class FirebaseMusicSource @Inject constructor(
             }
         }
 
+    /*Media items in the playable play list*/
+    fun hAsMediaItems() =
+        hSongsList.map { song ->
+            var des = MediaDescriptionCompat.Builder()
+                .setMediaUri(song.getString(MediaMetadataCompat.METADATA_KEY_MEDIA_URI).toUri())
+                .setTitle(song.description.title)
+                .setSubtitle(song.description.subtitle)
+                .setMediaId(song.description.mediaId)
+                .setIconUri(song.description.iconUri)
+                .build()
+            MediaBrowserCompat.MediaItem(des, FLAG_PLAYABLE)
+        }
 
+
+    /*Contains information for exo player where it can play the play list*/
+    fun hConvertToPlayList(dataSourceFactory: DefaultDataSourceFactory): ConcatenatingMediaSource {
+        val hConcatenatingMediaSource = ConcatenatingMediaSource()
+        hSongsList.forEach { song ->
+            val hMediaSource = ProgressiveMediaSource.Factory(dataSourceFactory)
+                .createMediaSource(
+                    song.getString(MediaMetadataCompat.METADATA_KEY_MEDIA_URI).toUri()
+                )
+            hConcatenatingMediaSource.addMediaSource(hMediaSource)
+        }
+        return hConcatenatingMediaSource
+    }
+
+    /*Get songs list from firebase and map it to media browser compat format
+    * when done state is initialized which triggers on ReadyListeners */
     suspend fun hFetchMedia() {
         withContext(Dispatchers.IO) {
             hState = STATE_INITIALIZING
-            var hGetSongs = hMusicDataBase.hGetSongs()
+            val hGetSongs = hMusicDataBase.hGetSongs()
             hSongsList = hGetSongs.map { song ->
                 MediaMetadataCompat.Builder()
                     .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, song.subTitle)
