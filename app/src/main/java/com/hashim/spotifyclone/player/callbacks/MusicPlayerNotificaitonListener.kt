@@ -2,7 +2,7 @@
  * Copyright (c) 2020/  12/ 19.  Created by Hashim Tahir
  */
 
-package com.hashim.spotifyclone.callbacks
+package com.hashim.spotifyclone.player.callbacks
 
 import android.app.Notification
 import android.content.Intent
