@@ -42,7 +42,7 @@ class MusicService : MediaBrowserServiceCompat() {
     private lateinit var hMediaSession: MediaSessionCompat
     private lateinit var hMediaSessionConnector: MediaSessionConnector
 
-    private val hIsForeGroundService = false
+    var hIsForeGroundService = false
 
     override fun onCreate() {
         super.onCreate()
