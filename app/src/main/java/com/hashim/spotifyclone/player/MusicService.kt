@@ -53,10 +53,14 @@ class MusicService : MediaBrowserServiceCompat() {
     private lateinit var hMusicNotificationManager: MusicNotificationManager
     private lateinit var hMusicPlayerEventListener: MusicPlayerEventListener
 
+
+
     private var hCurrentlyPlayingSong: MediaMetadataCompat? = null
 
     var hIsForeGroundService = false
     private var hIsPlayerInitilized = false
+
+
 
     companion object {
         var hCurrentSongDuration = 0L
@@ -161,6 +165,7 @@ class MusicService : MediaBrowserServiceCompat() {
                             )
                             hIsPlayerInitilized = true
                         } else {
+                            hMediaSession.sendSessionEvent(Constants.H_NETWORK_ERROR, null)
                             result.sendResult(null)
                         }
                     }

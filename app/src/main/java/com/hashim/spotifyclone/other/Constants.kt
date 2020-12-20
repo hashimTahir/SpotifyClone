@@ -6,6 +6,7 @@ package com.hashim.spotifyclone.other
 
 class Constants {
     companion object {
+        const val H_NETWORK_ERROR = "hNetworkError"
         const val H_NOTIFICATION_ID = 1
         const val H_SONGS = "songs"
         const val hTag = "hashimTimberTags %s"
