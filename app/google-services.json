@@ -15,11 +15,11 @@
       },
       "oauth_client": [
         {
-          "client_id": "99915064075-hcsm7oacvri0vn67od1b21ngnj67j8jj.apps.googleusercontent.com",
+          "client_id": "99915064075-bvgrs60ii1ios76r914t2qn1er6d1l4n.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.hashim.spotifyclone",
-            "certificate_hash": "d661660d848fa442fbcdab5b27a5c2d75dca6ac8"
+            "certificate_hash": "07f9f90f349bc5521789edc0f09712925e2a78f1"
           }
         },
         {

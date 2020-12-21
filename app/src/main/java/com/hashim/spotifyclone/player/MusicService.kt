@@ -98,7 +98,7 @@ class MusicService : MediaBrowserServiceCompat() {
                 this
             )
         ) {
-            hCurrentSongDuration = hExoPlayer.contentDuration
+            hCurrentSongDuration = hExoPlayer.duration
 
         }
 
