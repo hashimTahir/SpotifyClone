@@ -5,6 +5,7 @@
 package com.hashim.spotifyclone.ui.viewmodel
 
 import android.support.v4.media.MediaBrowserCompat
+import android.support.v4.media.MediaMetadataCompat.METADATA_KEY_MEDIA_ID
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -13,6 +14,9 @@ import com.hashim.spotifyclone.data.entities.Song
 import com.hashim.spotifyclone.other.Constants
 import com.hashim.spotifyclone.other.Resource
 import com.hashim.spotifyclone.player.MusicServiceConnection
+import com.hashim.spotifyclone.player.isPlayEnabled
+import com.hashim.spotifyclone.player.isPlaying
+import com.hashim.spotifyclone.player.isPrepared
 
 
 class MainViewModel @ViewModelInject constructor(
@@ -76,5 +80,25 @@ class MainViewModel @ViewModelInject constructor(
             object : MediaBrowserCompat.SubscriptionCallback() {
             }
         )
+    }
+
+    fun hPlayOrToggerSong(mediaItem: Song, toggle: Boolean = false) {
+        val hIsPrepared = hPlayBackStateLD.value?.isPrepared ?: false
+
+        if (hIsPrepared && mediaItem.mediaId == hCurrentlyPlayingSongLD?.value?.getString(
+                METADATA_KEY_MEDIA_ID
+            )
+        ) {
+            hPlayBackStateLD.value?.let { playbackStateCompat ->
+                when {
+                    playbackStateCompat.isPlaying -> if (toggle)
+                        musicServiceConnection.hTransportControls.pause()
+                    playbackStateCompat.isPlayEnabled -> musicServiceConnection.hTransportControls.play()
+                    else -> Unit
+                }
+            }
+        } else {
+            musicServiceConnection.hTransportControls.playFromMediaId(mediaItem.mediaId, null)
+        }
     }
 }
