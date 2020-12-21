@@ -8,6 +8,7 @@ import android.support.v4.media.MediaBrowserCompat
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
 import com.hashim.spotifyclone.data.entities.Song
 import com.hashim.spotifyclone.other.Constants
 import com.hashim.spotifyclone.other.Resource
@@ -16,7 +17,7 @@ import com.hashim.spotifyclone.player.MusicServiceConnection
 
 class MainViewModel @ViewModelInject constructor(
     private val musicServiceConnection: MusicServiceConnection
-) {
+) : ViewModel() {
     private val hMediaItemsMLD = MutableLiveData<Resource<List<Song>>>()
     val hMediaItemsLD: LiveData<Resource<List<Song>>> = hMediaItemsMLD
 
@@ -52,6 +53,27 @@ class MainViewModel @ViewModelInject constructor(
                         )
                     )
                 }
+            }
+        )
+    }
+
+    fun hSkipToNextSong() {
+        musicServiceConnection.hTransportControls.skipToNext()
+    }
+
+    fun hSkipToPreviousSong() {
+        musicServiceConnection.hTransportControls.skipToPrevious()
+    }
+
+    fun hSeekTo(pos: Long) {
+        musicServiceConnection.hTransportControls.seekTo(pos)
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        musicServiceConnection.hUnSubscribe(
+            Constants.H_MEDIA_ROOT_ID,
+            object : MediaBrowserCompat.SubscriptionCallback() {
             }
         )
     }
