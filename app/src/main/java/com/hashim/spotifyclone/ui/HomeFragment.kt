@@ -30,6 +30,10 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         hMainViewModel = ViewModelProvider(requireActivity()).get(MainViewModel::class.java)
         hInitRecyclerView()
         hSubscribeObservers()
+
+        hSongsAdapter.hSetOnItemClickListener {
+            hMainViewModel.hPlayOrToggerSong(it)
+        }
     }
 
     private fun hInitRecyclerView() {
@@ -37,23 +41,21 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             adapter = hSongsAdapter
             layoutManager = LinearLayoutManager(requireContext())
         }
-        hSongsAdapter.hSetOnItemClickListener {
-            hMainViewModel.hPlayOrToggerSong(it)
-        }
+
     }
 
     private fun hSubscribeObservers() {
         hMainViewModel.hMediaItemsLD.observe(
             viewLifecycleOwner, { result ->
                 when (result.status) {
-                    Status.H_LOADING -> {
+                    Status.H_SUCCESS -> {
                         allSongsProgressBar.isVisible = false
                         result.data?.let { songs ->
                             hSongsAdapter.hSongsList = songs
                         }
                     }
                     Status.H_ERROR -> Unit
-                    Status.H_SUCCESS -> allSongsProgressBar.isVisible = true
+                    Status.H_LOADING -> allSongsProgressBar.isVisible = true
                 }
 
             }

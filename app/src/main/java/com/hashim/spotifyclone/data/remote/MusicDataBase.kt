@@ -18,7 +18,7 @@ class MusicDataBase {
             hSongCollection.get().await().toObjects(Song::class.java)
 
         } catch (e: Exception) {
-            emptyList<Song>()
+            emptyList()
         }
     }
 }

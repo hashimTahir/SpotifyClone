@@ -54,12 +54,10 @@ class MusicService : MediaBrowserServiceCompat() {
     private lateinit var hMusicPlayerEventListener: MusicPlayerEventListener
 
 
-
     private var hCurrentlyPlayingSong: MediaMetadataCompat? = null
 
     var hIsForeGroundService = false
     private var hIsPlayerInitilized = false
-
 
 
     companion object {
@@ -164,10 +162,10 @@ class MusicService : MediaBrowserServiceCompat() {
                                 false
                             )
                             hIsPlayerInitilized = true
-                        } else {
-                            hMediaSession.sendSessionEvent(Constants.H_NETWORK_ERROR, null)
-                            result.sendResult(null)
                         }
+                    } else {
+                        hMediaSession.sendSessionEvent(Constants.H_NETWORK_ERROR, null)
+                        result.sendResult(null)
                     }
                 }
                 if (!hResultsSent) {
