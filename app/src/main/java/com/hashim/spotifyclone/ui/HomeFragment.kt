@@ -5,6 +5,7 @@
 package com.hashim.spotifyclone.ui
 
 import android.os.Bundle
+import android.support.v4.media.session.PlaybackStateCompat
 import android.view.View
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
@@ -24,6 +25,7 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
     @Inject
     lateinit var hSongsAdapter: SongsAdapter
+
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)

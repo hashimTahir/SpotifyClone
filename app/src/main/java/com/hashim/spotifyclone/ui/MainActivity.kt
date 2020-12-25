@@ -5,16 +5,20 @@
 package com.hashim.spotifyclone.ui
 
 import android.os.Bundle
+import android.support.v4.media.session.PlaybackStateCompat
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
+import androidx.viewpager2.widget.ViewPager2
 import com.bumptech.glide.RequestManager
+import com.google.android.material.snackbar.Snackbar
 import com.hashim.spotifyclone.R
 import com.hashim.spotifyclone.adapters.SwipeSongsAdapter
 import com.hashim.spotifyclone.data.entities.Song
 import com.hashim.spotifyclone.other.Status
+import com.hashim.spotifyclone.player.isPlaying
 import com.hashim.spotifyclone.player.toSong
 import com.hashim.spotifyclone.ui.viewmodel.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -36,14 +40,39 @@ class MainActivity : AppCompatActivity() {
     lateinit var hGlide: RequestManager
 
     private var hCurrentPlayingSong: Song? = null
+
+    private var hPlaybackStateCompat: PlaybackStateCompat? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         hInitNavHostFragment()
         hSubscribeToObsersers()
+        hSetupListeners()
 
         vpSong.adapter = hSwipeSongsAdapter
+    }
+
+    private fun hSetupListeners() {
+        ivPlayPause.setOnClickListener {
+            hCurrentPlayingSong?.let {
+                hMainViewModel.hPlayOrToggerSong(it, true)
+            }
+        }
+
+        vpSong.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
+            override fun onPageSelected(position: Int) {
+                super.onPageSelected(position)
+                if (hPlaybackStateCompat?.isPlaying == true) {
+                    hMainViewModel.hPlayOrToggerSong(
+                        hSwipeSongsAdapter.hSongsList.get(position)
+                    )
+                } else {
+                    hCurrentPlayingSong = hSwipeSongsAdapter.hSongsList.get(position)
+                }
+            }
+        })
     }
 
     private fun hSwitchPagerToCurrentSong(song: Song) {
@@ -64,10 +93,9 @@ class MainActivity : AppCompatActivity() {
                             songResourse.data?.let { songsList ->
                                 hSwipeSongsAdapter.hSongsList = songsList
                                 if (songsList.isNotEmpty()) {
-                                    hGlide.load(
-                                        (hCurrentPlayingSong ?: songsList.get(0).imageUrl)
+                                    hLoadImageWithGlide(
+                                        hCurrentPlayingSong?.imageUrl ?: songsList.get(0).imageUrl
                                     )
-                                        .into(ivCurSongImage)
                                 }
                                 hSwitchPagerToCurrentSong(hCurrentPlayingSong ?: return@Observer)
                             }
@@ -82,15 +110,43 @@ class MainActivity : AppCompatActivity() {
                         if (it == null) return@observe
 
                         hCurrentPlayingSong = it.toSong()
-                        hGlide.load(
-                            hCurrentPlayingSong?.imageUrl
-                        )
-                            .into(ivCurSongImage)
-                        hSwitchPagerToCurrentSong(hCurrentPlayingSong ?:return@observe)
+
+                        hLoadImageWithGlide(hCurrentPlayingSong?.imageUrl)
+                        hSwitchPagerToCurrentSong(hCurrentPlayingSong ?: return@observe)
                     }
                 )
 
+                hMainViewModel.hPlayBackStateLD.observe(this, {
+                    hPlaybackStateCompat = it
+                    ivPlayPause.setImageResource(
+                        if (hPlaybackStateCompat?.isPlaying == true) R.drawable.ic_pause else R.drawable.ic_play
+                    )
 
+                })
+                hMainViewModel.hIsConnectedLD.observe(this, {
+                    it?.hGetContentifNotHandled()?.let { result ->
+                        when (result.status) {
+                            Status.H_ERROR -> Snackbar.make(
+                                rootLayout,
+                                result.message ?: "An Error occured",
+                                Snackbar.LENGTH_LONG
+                            ).show()
+                            else -> Unit
+                        }
+                    }
+                })
+                hMainViewModel.hIsNetworkErrorLD.observe(this, {
+                    it?.hGetContentifNotHandled()?.let { result ->
+                        when (result.status) {
+                            Status.H_ERROR -> Snackbar.make(
+                                rootLayout,
+                                result.message ?: "An Error occured",
+                                Snackbar.LENGTH_LONG
+                            ).show()
+                            else -> Unit
+                        }
+                    }
+                })
             }
         )
     }
@@ -102,5 +158,11 @@ class MainActivity : AppCompatActivity() {
         hNavController.setGraph(R.navigation.nav_graph)
         hNavController.addOnDestinationChangedListener { _, destination, _ ->
         }
+    }
+
+    private fun hLoadImageWithGlide(url: String?) {
+        hGlide.load(url)
+            .into(ivCurSongImage)
+
     }
 }
