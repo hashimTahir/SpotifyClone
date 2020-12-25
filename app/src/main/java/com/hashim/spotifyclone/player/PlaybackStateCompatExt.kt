@@ -4,7 +4,9 @@
 
 package com.hashim.spotifyclone.player
 
+import android.os.SystemClock
 import android.support.v4.media.session.PlaybackStateCompat
+import android.support.v4.media.session.PlaybackStateCompat.STATE_PLAYING
 
 
 inline val PlaybackStateCompat.isPrepared
@@ -24,3 +26,8 @@ inline val PlaybackStateCompat.isPlayEnabled
                     state == PlaybackStateCompat.STATE_PAUSED)
 
 
+inline val PlaybackStateCompat.currentPlaybackPosition: Long
+    get() = if (state == STATE_PLAYING) {
+        val hTimeDelta = SystemClock.elapsedRealtime() - lastPositionUpdateTime
+        (position * (hTimeDelta * playbackSpeed)).toLong()
+    } else position
