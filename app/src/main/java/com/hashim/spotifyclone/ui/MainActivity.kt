@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.support.v4.media.session.PlaybackStateCompat
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.isVisible
 import androidx.lifecycle.Observer
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
@@ -73,6 +74,12 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         })
+
+        hSwipeSongsAdapter.hSetOnItemClickListener {
+            hNavController.navigate(
+                R.id.hToSongFragment
+            )
+        }
     }
 
     private fun hSwitchPagerToCurrentSong(song: Song) {
@@ -157,6 +164,11 @@ class MainActivity : AppCompatActivity() {
         hNavController = hNavHostFragment.navController
         hNavController.setGraph(R.navigation.nav_graph)
         hNavController.addOnDestinationChangedListener { _, destination, _ ->
+            when (destination.id) {
+                R.id.hToSongFragment -> hHideBottomBar()
+                R.id.hHomeFragment -> hShoweBottomBar()
+                else -> hShoweBottomBar()
+            }
         }
     }
 
@@ -164,5 +176,17 @@ class MainActivity : AppCompatActivity() {
         hGlide.load(url)
             .into(ivCurSongImage)
 
+    }
+
+    private fun hHideBottomBar() {
+        ivCurSongImage.isVisible = false
+        vpSong.isVisible = false
+        ivPlayPause.isVisible = false
+    }
+
+    private fun hShoweBottomBar() {
+        ivCurSongImage.isVisible = true
+        vpSong.isVisible = true
+        ivPlayPause.isVisible = true
     }
 }

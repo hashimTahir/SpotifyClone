@@ -8,10 +8,17 @@
     android:id="@+id/nav_graph.xml"
     app:startDestination="@id/hHomeFragment"
     tools:ignore="UnusedNavigation">
-
+    <action
+        android:id="@+id/hToSongFragment"
+        app:destination="@id/hSongFragment" />
     <fragment
         android:id="@+id/hHomeFragment"
         android:name="com.hashim.spotifyclone.ui.HomeFragment"
         android:label="HomeFragment"
         tools:layout="@layout/fragment_home" />
+    <fragment
+        android:id="@+id/hSongFragment"
+        android:name="com.hashim.spotifyclone.ui.SongFragment"
+        android:label="SongFragment"
+        tools:layout="@layout/fragment_song" />
 </navigation>
